@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrlShortnerApi", "UrlShortnerApi\UrlShortnerApi.csproj", "{7B0C9089-2F56-4325-AD79-E46147E581AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UrlShortnerApi", "UrlShortnerApi\UrlShortnerApi.csproj", "{7B0C9089-2F56-4325-AD79-E46147E581AE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UrlShortner.Auth", "UrlShortner.Auth\UrlShortner.Auth.csproj", "{F7D3E0F4-2959-47F5-827A-5D6A1F41D8DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrlShortner.Gateway", "UrlShortner.Gateway\UrlShortner.Gateway.csproj", "{1B7CFEC4-B363-465E-B182-CB323477B566}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{7B0C9089-2F56-4325-AD79-E46147E581AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B0C9089-2F56-4325-AD79-E46147E581AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B0C9089-2F56-4325-AD79-E46147E581AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7D3E0F4-2959-47F5-827A-5D6A1F41D8DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7D3E0F4-2959-47F5-827A-5D6A1F41D8DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7D3E0F4-2959-47F5-827A-5D6A1F41D8DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7D3E0F4-2959-47F5-827A-5D6A1F41D8DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B7CFEC4-B363-465E-B182-CB323477B566}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B7CFEC4-B363-465E-B182-CB323477B566}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B7CFEC4-B363-465E-B182-CB323477B566}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B7CFEC4-B363-465E-B182-CB323477B566}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
