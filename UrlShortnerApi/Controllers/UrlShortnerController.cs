@@ -22,7 +22,8 @@ namespace UrlShortnerApi.Controllers
             _shortUrlService = urlService;
         }
 
-        [HttpPost(Name = "AddUrl")]
+        [HttpPost("AddUrl")]
+        [Authorize]
         public IActionResult AddUrl([FromBody] ShortenRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.OriginalUrl))
@@ -60,6 +61,7 @@ namespace UrlShortnerApi.Controllers
 
         // GET: api/url/all (optional, for debugging/demo)
         [HttpGet("all")]
+        [Authorize]
         public IActionResult GetAll()
         {
             return Ok(_urlStore);
