@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -24,6 +25,13 @@ namespace UrlShortener.Auth.Controllers
             _config = config;
         }
 
+        [Authorize]
+        [HttpGet("me")]
+        public IActionResult Me()
+        {
+            return Ok();
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequest dto)
         {
@@ -45,7 +53,16 @@ namespace UrlShortener.Auth.Controllers
                 return Unauthorized();
 
             var token = GenerateJwt(user, await _userManager.GetRolesAsync(user));
-            return Ok(new { token });
+
+            Response.Cookies.Append("access_token", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTimeOffset.UtcNow.AddHours(2)
+            });
+
+            return Ok();
         }
 
         private string GenerateJwt(ApplicationUser user, IList<string> roles)
