@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { shortenUrl } from "../services/urlService";
 
 function ShortenUrl() {
@@ -6,6 +6,8 @@ function ShortenUrl() {
     const [originalUrl, setOriginalUrl] = useState("");
     const [shortUrl, setShortUrl] = useState("");
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     const handleShorten = async (event) => {
         event.preventDefault();
@@ -18,6 +20,8 @@ function ShortenUrl() {
             return;
         }
 
+        setLoading(true);
+
         try {
             const result = await shortenUrl(originalUrl);
             setShortUrl(result.shortUrl);
@@ -26,7 +30,15 @@ function ShortenUrl() {
             console.error(error);
             setError("failed to shorten url");
         }
+        finally {
+            setLoading(false);
+        }
     };
+
+    const handleCopy = async (event) => {
+        navigator.clipboard.writeText(shortUrl);
+        setCopied(true);
+    }
 
     return (
         <div className="container mt-5">
@@ -73,8 +85,9 @@ function ShortenUrl() {
                         <button
                             type="submit"
                             className="btn btn-primary"
+                            disabled={loading}
                         >
-                            Shorten URL
+                            {loading ? "loading..." : "Shorten URL"}
                         </button>
 
                     </form>
@@ -95,6 +108,13 @@ function ShortenUrl() {
                                     readOnly
                                 />
 
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={handleCopy}
+                                >
+                                    {copied ? "✓ Copied" : "Copy"}
+                                </button>
                             </div>
 
                         </div>
