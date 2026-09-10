@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Security.Claims;
 using UrlShortnerApi.Services;
 
 namespace UrlShortnerApi.Controllers
@@ -16,15 +18,18 @@ namespace UrlShortnerApi.Controllers
         private static readonly Dictionary<string, string> _urlStore = new();
         private static readonly Random _random = new();
         private readonly ShortUrlService _shortUrlService;
-        public UrlShortnerController(ILogger<UrlShortnerController> logger, ShortUrlService urlService)
+        private readonly IConfiguration _configuration;
+
+        public UrlShortnerController(ILogger<UrlShortnerController> logger, ShortUrlService urlService, IConfiguration config)
         {
             _logger = logger;
             _shortUrlService = urlService;
+            _configuration = config;
         }
 
         [HttpPost("AddUrl")]
         [Authorize]
-        public IActionResult AddUrl([FromBody] ShortenRequest request)
+        public async Task<IActionResult> AddUrl([FromBody] ShortenRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.OriginalUrl))
                 return BadRequest("URL cannot be empty.");
@@ -35,7 +40,7 @@ namespace UrlShortnerApi.Controllers
             if (request.UserId == null)
                 return BadRequest($"Invalid User: {request.UserId}");
 
-            var shortCode = _shortUrlService.CreateShortUrl(request.OriginalUrl, request.UserId);
+            var shortCode = await _shortUrlService.CreateShortUrl(request.OriginalUrl, request.UserId);
             
             if (shortCode == null)
                 return Problem(
@@ -44,8 +49,60 @@ namespace UrlShortnerApi.Controllers
                             title: "Server Error"
                         );
 
-            var shortUrl = $"{Request.Scheme}://{Request.Host}/api/url/{shortCode}";
+            var gatewayUrl = _configuration["Gateway:Url"];
+            var shortUrl = $"{gatewayUrl}/api/UrlShortner/{shortCode}";
             return Ok(new { shortUrl, shortCode });
+        }
+
+        [HttpDelete("{code}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteUrl(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+                return BadRequest("URL cannot be empty.");
+
+            var shortCode = await _shortUrlService.DeleteShortUrl(code);
+
+            if (shortCode == null)
+                return NotFound();
+
+            if (shortCode.Equals(string.Empty))
+            {
+                return Problem(
+                    statusCode: StatusCodes.Status500InternalServerError,
+                    title: "Something went wrong at the server side"
+                    );
+            }
+
+            return NoContent(); 
+        }
+
+        [HttpPatch("{code}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateUrl(string code, [FromBody] UpdateRequest updateRequest)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.Email);
+
+            if (userId is null)
+                return Unauthorized();
+
+            if (string.IsNullOrWhiteSpace(code))
+                return BadRequest("URL cannot be empty.");
+
+            var shortCode = await _shortUrlService.UpdateUrl(code, updateRequest.originalUrl, userId);
+
+            if (shortCode == null)
+                return NotFound();
+
+            if (shortCode.Equals(string.Empty))
+            {
+                return Problem(
+                    statusCode: StatusCodes.Status500InternalServerError,
+                    title: "Something went wrong. Try after some time."
+                    );
+            }
+
+            return Ok(updateRequest.originalUrl); 
         }
 
         // GET: api/url/{code}
@@ -64,7 +121,8 @@ namespace UrlShortnerApi.Controllers
         [Authorize]
         public IActionResult GetAll()
         {
-            return Ok(_urlStore);
+            var urls = _shortUrlService.GetAllUrls();
+            return Ok(urls);
         }
 
         private string GenerateShortCode(int length = 6)
@@ -85,5 +143,10 @@ namespace UrlShortnerApi.Controllers
     {
         public string OriginalUrl { get; set; } = string.Empty;
         public string? UserId { get; set; }
+    }
+
+    public class UpdateRequest
+    {
+        public string originalUrl { get; set; } = string.Empty;
     }
 }

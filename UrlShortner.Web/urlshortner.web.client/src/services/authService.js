@@ -15,6 +15,14 @@ export const login = async (email, password) => {
     return response.data;
 }
 
+export const logout = async () => {
+    await axios.post(
+        "https://localhost:7148/api/Auth/logout",
+        {},
+        { withCredentials: true }
+    );
+};
+
 export const checkAuthentication = async () => {
     try {
         await axios.get(

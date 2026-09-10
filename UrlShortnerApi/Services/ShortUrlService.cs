@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace UrlShortnerApi.Services
@@ -11,12 +12,60 @@ namespace UrlShortnerApi.Services
             this.dbContext = dbContext;
         }
 
+        public IEnumerable<Url> GetAllUrls()
+        {
+            return dbContext.Urls;
+        }
+
         public string? GetOriginalUrl(string shortUrl)
         {
             return dbContext.Urls.FirstOrDefault(u => u.ShortUrl == shortUrl)?.OriginalUrl;
         }
 
-        public string? CreateShortUrl(string originalUrl, string userId)
+        public async Task<string?> DeleteShortUrl(string shortUrl)
+        {
+            try
+            {
+                var url = dbContext.Urls.FirstOrDefault(x => x.ShortUrl == shortUrl);
+                if (url == null)
+                {
+                    return null;
+                }
+
+                dbContext.Urls.Remove(url);
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+
+            return shortUrl;
+        }
+
+        public async Task<string?> UpdateUrl(string shortUrl, string originalUrl, string userId)
+        {
+            try
+            {
+                var url = dbContext.Urls.FirstOrDefault(x => x.ShortUrl == shortUrl && x.UserId == userId);
+                
+                if (url == null)
+                {
+                    return null;
+                }
+
+                url.OriginalUrl = originalUrl;
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+
+            return shortUrl;
+        }
+
+        public async Task<string?> CreateShortUrl(string originalUrl, string userId)
         {
             var shortUrl = GenerateShortCode(originalUrl);
 
@@ -28,8 +77,8 @@ namespace UrlShortnerApi.Services
 
             try
             {
-                dbContext.Urls.Add(url);
-                dbContext.SaveChanges();
+                await dbContext.Urls.AddAsync(url);
+                await dbContext.SaveChangesAsync();
             }
             catch (Exception)
             {
@@ -55,5 +104,7 @@ namespace UrlShortnerApi.Services
 
             return new string(result);
         }
+
+
     }
 }
